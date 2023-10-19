@@ -29,3 +29,9 @@ add_executable(webgpu-cameras-step-4-aim-Fs
 webgpu-cameras-step-4-aim-Fs.c
 )
 target_link_libraries(webgpu-cameras-step-4-aim-Fs PRIVATE glfw wgpu_native create_surface framework cglm)
+
+#--------------WEBGPU-PERSPECTIVE-PROJECTION-STEP-4-PERSPECTIVE
+add_executable(webgpu-perspective-projection-step-4-perspective
+webgpu-perspective-projection-step-4-perspective.c
+)
+target_link_libraries(webgpu-perspective-projection-step-4-perspective PRIVATE glfw wgpu_native create_surface framework cglm)
