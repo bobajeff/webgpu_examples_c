@@ -1,4 +1,3 @@
-#include "cglm/affine.h"
 #include "create_surface.h"
 #include "framework.h"
 #include "webgpu.h"
