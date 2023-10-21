@@ -54,6 +54,13 @@ target_link_libraries(framework PRIVATE wgpu_native)
 target_include_directories(framework PUBLIC ${CMAKE_SOURCE_DIR})
 
 include(FetchContent)
+
+#--------------RPLY
+add_library(rply
+rply.c
+)
+target_include_directories(rply PUBLIC ${CMAKE_SOURCE_DIR})
+
 #--------------GLFW
 FetchContent_Declare(
         glfw
@@ -69,3 +76,4 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cglm)
 
 add_subdirectory(glm_cameras)
+add_subdirectory(load_geometry_data)
