@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
      0, 12,  2,   12, 14,  2,   // left
   };
 
-  char quadColors[] = {
+  unsigned char quadColors[] = {
       200,  70, 120,  // left column front
       200,  70, 120,  // top rung front
       200,  70, 120,  // middle rung front
@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
   int numVertices = indices_length;
   int vertexDataSize = indices_length * 4 * sizeof(float);
   float *vertexData = (float *)malloc(vertexDataSize);
-  char * colorData = (char *)vertexData;
+  unsigned char * colorData = (unsigned char *)vertexData;
   for (i = 0; i < indices_length; i++){
       int positionNdx = indices[i] * 3;
       vertexData[i * 4] = positions[positionNdx];
@@ -274,7 +274,7 @@ int main(int argc, char *argv[]) {
       colorData[i * 16 + 12] = quadColors[quadNdx];
       colorData[i * 16 + 12 + 1] = quadColors[quadNdx + 1];
       colorData[i * 16 + 12 + 2] = quadColors[quadNdx + 2];
-      colorData[i * 16 + 12 + 3] = (char)225;
+      colorData[i * 16 + 12 + 3] = (unsigned char)255;
   }
 
   const WGPUBuffer vertexBuffer = wgpuDeviceCreateBuffer(

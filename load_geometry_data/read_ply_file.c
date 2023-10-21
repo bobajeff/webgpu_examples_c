@@ -3,7 +3,7 @@
 #include "rply.h"
 
 float *_vertexData;
-char *colorData;
+unsigned char *colorData;
 
 static int x_cb(p_ply_argument argument) {
   long instance_index;
@@ -33,7 +33,7 @@ static int r_cb(p_ply_argument argument) {
   long instance_index;
   ply_get_argument_element(argument, NULL, &instance_index);
 
-  colorData[instance_index * 16 + 12] = (char)ply_get_argument_value(argument);
+  colorData[instance_index * 16 + 12] = (unsigned char)ply_get_argument_value(argument);
   return 1;
 }
 
@@ -42,7 +42,7 @@ static int g_cb(p_ply_argument argument) {
   ply_get_argument_element(argument, NULL, &instance_index);
 
   colorData[instance_index * 16 + 12 + 1] =
-      (char)ply_get_argument_value(argument);
+      (unsigned char)ply_get_argument_value(argument);
   return 1;
 }
 
@@ -51,7 +51,7 @@ static int b_cb(p_ply_argument argument) {
   ply_get_argument_element(argument, NULL, &instance_index);
 
   colorData[instance_index * 16 + 12 + 2] =
-      (char)ply_get_argument_value(argument);
+      (unsigned char)ply_get_argument_value(argument);
   return 1;
 }
 
@@ -60,7 +60,7 @@ static int a_cb(p_ply_argument argument) {
   ply_get_argument_element(argument, NULL, &instance_index);
 
   colorData[instance_index * 16 + 12 + 3] =
-      (char)ply_get_argument_value(argument);
+      (unsigned char)ply_get_argument_value(argument);
   return 1;
 }
 
@@ -85,7 +85,7 @@ int get_vertex_data(const char *ply_filepath, float **vertexData, int *vertexDat
   *vertexDataSize = *numVertices * 4 * sizeof(float);
   *vertexData = (float *)malloc(*vertexDataSize);
   _vertexData = *vertexData;
-  colorData = (char *)*vertexData;
+  colorData = (unsigned char *)*vertexData;
   if (!ply_read(ply)) {
     fprintf(stderr, "Can't read element/property data from ply file\n");
     return 1;
