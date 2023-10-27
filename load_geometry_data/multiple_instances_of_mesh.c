@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
   
   WGPUTexture depthTexture = NULL;
 
-  // set xz coords of extra Fs
+  // set xz coords of Fs
   float f_xz_coords[numFs][2];
   printf("Generated F xz coordinates:\n");
   for (i = 0; i < numFs; ++i) {
@@ -365,8 +365,8 @@ int main(int argc, char *argv[]) {
     mat4 projection;
     glm_perspective(degToRad(fieldOfView), aspect, 1, 2000, projection);
 
-    // Compute the position of the first F
-    float fPosition[3] = {radius, 0, 0};
+    // Position of the first F
+    float fPosition[3] = {f_xz_coords[0][0], 0, f_xz_coords[0][1]};
 
     // Use matrix math to compute a position on a circle where
     // the camera is
