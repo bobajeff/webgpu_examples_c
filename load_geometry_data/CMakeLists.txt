@@ -17,3 +17,9 @@ add_executable(use_ply_data
 use_ply_data.c
 )
 target_link_libraries(use_ply_data PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
+
+#--------------MULTIPLE_INSTANCES_OF_MESH
+add_executable(multiple_instances_of_mesh
+multiple_instances_of_mesh.c
+)
+target_link_libraries(multiple_instances_of_mesh PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
