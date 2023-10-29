@@ -23,3 +23,9 @@ add_executable(multiple_instances_of_mesh
 multiple_instances_of_mesh.c
 )
 target_link_libraries(multiple_instances_of_mesh PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
+
+#--------------MULTIPLE_INSTANCES_USING_INSTANCECOUNT
+add_executable(multiple_instances_using_instanceCount
+multiple_instances_using_instanceCount.c
+)
+target_link_libraries(multiple_instances_using_instanceCount PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
