@@ -17,12 +17,8 @@ struct VSOutput {
  
 @vertex fn vs(vert: Vertex, @builtin(instance_index) instanceIndex : u32) -> VSOutput {
   var vsOut: VSOutput;
-  let translation_mat = mat4x4<f32>(
-    vec4<f32>(1.0, 0.0, 0.0, 0.0),
-    vec4<f32>(0.0, 1.0, 0.0, 0.0),
-    vec4<f32>(0.0, 0.0, 1.0, 0.0),
-    vec4<f32>(xz_coords[instanceIndex].x, 0.0, xz_coords[instanceIndex].y, 1.0));
-  vsOut.position = uni.matrix * translation_mat * vert.position;
+  let instance_vert_postion = vec4<f32>(xz_coords[instanceIndex].x, 0.0, xz_coords[instanceIndex].y, 0.0) + vert.position;
+  vsOut.position = uni.matrix * instance_vert_postion;
   vsOut.color = vert.color;
   return vsOut;
 }
