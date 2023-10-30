@@ -150,13 +150,13 @@ int main(int argc, char *argv[]) {
       });
 
   
-  #define numFs 10
-  WGPUBuffer uniformBuffer[numFs];
-  WGPUBindGroup bindGroup[numFs];
+  #define numInstances 12
+  WGPUBuffer uniformBuffer[numInstances];
+  WGPUBindGroup bindGroup[numInstances];
   Uniforms uniformValues = {};
   const uint64_t uniformBufferSize = (16) * 4;
   int i;
-  for (i = 0; i < numFs; i++) {
+  for (i = 0; i < numInstances; i++) {
     // matrix
     uniformBuffer[i] = wgpuDeviceCreateBuffer(
         device, &(WGPUBufferDescriptor){.label = "uniforms",
@@ -233,10 +233,10 @@ int main(int argc, char *argv[]) {
   WGPUTexture depthTexture = NULL;
 
   // set xz coords of Fs
-  float f_xz_coords[numFs][2];
+  float f_xz_coords[numInstances][2];
   printf("Generated F xz coordinates:\n");
-  for (i = 0; i < numFs; i++) {
-    float angle = ((float)i / numFs) * M_PI * 2;
+  for (i = 0; i < numInstances; i++) {
+    float angle = ((float)i / numInstances) * M_PI * 2;
     f_xz_coords[i][0] = cosf(angle) * radius;
     f_xz_coords[i][1] = sinf(angle) * radius;
     printf("%f %f\n", f_xz_coords[i][0], f_xz_coords[i][1]);
@@ -245,8 +245,8 @@ int main(int argc, char *argv[]) {
   
   printf("Generated preset mesh indecies:\n");
   int mesh_index = 0;
-  int mesh_indecies[numFs];
-  for (i = 0; i < numFs; i++) {
+  int mesh_indecies[numInstances];
+  for (i = 0; i < numInstances; i++) {
     mesh_indecies[i] = mesh_index;
     printf("%i\n", mesh_indecies[i]);
     mesh_index = mesh_index + 1 < numMeshes ? mesh_index + 1 : 0;
@@ -401,7 +401,7 @@ int main(int argc, char *argv[]) {
     // combine the view and projection matrixes
     mat4 viewProjectionMatrix;
     glm_mat4_mul(projection, viewMatrix, viewProjectionMatrix);
-    for (i = 0; i < numFs; i++) {
+    for (i = 0; i < numInstances; i++) {
         wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertexBuffer[mesh_indecies[i]], 0,
                                          vertexDataSize[mesh_indecies[i]]);
         glm_translate_to(viewProjectionMatrix, (float[3]){f_xz_coords[i][0], 0, f_xz_coords[i][1]}, uniformValues.matrix);
