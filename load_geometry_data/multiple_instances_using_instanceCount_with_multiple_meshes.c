@@ -18,7 +18,7 @@ typedef struct Uniforms {
   mat4 matrix;
 } Uniforms;
 
-float degToRad(int d){ return d * M_PI / 180;};
+float degToRad(float d){ return d * M_PI / 180;};
 
 
 int main(int argc, char *argv[]) {
@@ -151,14 +151,14 @@ int main(int argc, char *argv[]) {
       });
 
   
-  #define numScreenObjects 10
+  #define numScreenObjects 1000
   #define numMeshes 3
 
   int i;
-  int radius = 200;
+  int radius = 20000;
 
   int fieldOfView = 100;
-  int cameraAngle = 0;
+  float cameraAngle = 0;
   Uniforms uniformValues = {};
   const uint64_t uniformBufferSize = (16) * 4;
 
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
 
   while (!glfwWindowShouldClose(window)) {
     if (cameraAngle < 360){
-        cameraAngle += 1;
+        cameraAngle += 0.02;
     } else {
         cameraAngle = -360;
     }
@@ -412,7 +412,7 @@ int main(int argc, char *argv[]) {
     
     int aspect = window_width / window_height;
     mat4 projection;
-    glm_perspective(degToRad(fieldOfView), aspect, 1, 2000, projection);
+    glm_perspective(degToRad(fieldOfView), aspect, 1, 1000000, projection);
 
     // Position of the first F
     float fPosition[3] = {mesh_xz_coords[0][0], 0, mesh_xz_coords[0][1]};
@@ -422,7 +422,7 @@ int main(int argc, char *argv[]) {
     mat4 tmp_matrix, tmp_matrix_2;
     glm_mat4_identity(tmp_matrix);
     glm_rotate_y(tmp_matrix, degToRad(cameraAngle), tmp_matrix_2);
-    glm_translate_to(tmp_matrix_2, (float[3]){0, 0, radius * 1.5}, tmp_matrix);
+    glm_translate_to(tmp_matrix_2, (float[3]){0, 0, radius * 1.01}, tmp_matrix);
 
 
     // Get the camera's position from the matrix we computed
