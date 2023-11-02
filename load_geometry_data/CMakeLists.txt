@@ -41,3 +41,9 @@ add_executable(multiple_instances_using_instanceCount_with_multiple_meshes
 multiple_instances_using_instanceCount_with_multiple_meshes.c
 )
 target_link_libraries(multiple_instances_using_instanceCount_with_multiple_meshes PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
+
+#--------------MULTIPLE_INSTANCES_USING_INSTANCECOUNT_AND_STEPMODEINSTANCE
+add_executable(multiple_instances_using_instanceCount_and_StepModeInstance
+multiple_instances_using_instanceCount_and_StepModeInstance.c
+)
+target_link_libraries(multiple_instances_using_instanceCount_and_StepModeInstance PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
