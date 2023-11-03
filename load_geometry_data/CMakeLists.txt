@@ -53,3 +53,15 @@ add_executable(multiple_instances_using_instanceCount_firstVertex_firstInstance
 multiple_instances_using_instanceCount_firstVertex_firstInstance.c
 )
 target_link_libraries(multiple_instances_using_instanceCount_firstVertex_firstInstance PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
+
+#--------------READ_PLY_FILE_INDEX
+add_library(read_ply_file_index
+read_ply_file_index.c
+)
+target_link_libraries(read_ply_file_index PRIVATE rply)
+
+#--------------USE_PLY_DATA_DRAWINDEXED
+add_executable(use_ply_data_DrawIndexed
+use_ply_data_DrawIndexed.c
+)
+target_link_libraries(use_ply_data_DrawIndexed PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file_index)
