@@ -65,3 +65,9 @@ add_executable(use_ply_data_DrawIndexed
 use_ply_data_DrawIndexed.c
 )
 target_link_libraries(use_ply_data_DrawIndexed PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file_index)
+
+#--------------MULTIPLE_INSTANCES_MULTIPLE_MESH_ONE_DRAW
+add_executable(multiple_instances_multiple_mesh_one_draw
+multiple_instances_multiple_mesh_one_draw.c
+)
+target_link_libraries(multiple_instances_multiple_mesh_one_draw PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
