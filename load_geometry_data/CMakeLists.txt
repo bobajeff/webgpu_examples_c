@@ -77,3 +77,9 @@ add_executable(multiple_instances_one_draw_with_compute
 multiple_instances_one_draw_with_compute.c
 )
 target_link_libraries(multiple_instances_one_draw_with_compute PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
+
+#--------------MULTIPLE_INSTANCES_ONE_DRAW_WITH_COMPUTE_WORKGROUP_SIZE_64
+add_executable(multiple_instances_one_draw_with_compute_workgroup_size_64
+multiple_instances_one_draw_with_compute_workgroup_size_64.c
+)
+target_link_libraries(multiple_instances_one_draw_with_compute_workgroup_size_64 PRIVATE glfw wgpu_native create_surface framework cglm read_ply_file)
