@@ -17,14 +17,14 @@ typedef struct Uniforms {
   mat4 matrix;
 } Uniforms;
 
-typedef struct PartData {
+typedef struct PartMap {
   u_int32_t numVerticesMesh;
   u_int32_t numFacesInPart;
   u_int32_t meshOffset;
   u_int32_t numMeshInstances;
   u_int32_t firstInstance;
   u_int32_t firstPart;
-} PartData;
+} PartMap;
 
 typedef struct InstanceData {
   float x;
@@ -70,21 +70,21 @@ int main(int argc, char *argv[]) {
   WGPUTextureFormat presentation_format =
       wgpuSurfaceGetPreferredFormat(surface, adapter);
 
-  WGPUShaderModuleDescriptor compute_shader_source = load_wgsl(
-      RESOURCE_DIR "multiple_instances_multiple_mesh_one_draw_with_compute.wgsl");
+  WGPUShaderModuleDescriptor compute_shader_source =
+      load_wgsl(RESOURCE_DIR
+                "multiple_instances_multiple_mesh_one_draw_with_compute.wgsl");
   WGPUShaderModule compute_module =
       wgpuDeviceCreateShaderModule(device, &compute_shader_source);
 
-  #define NUM_SCREEN_OBJECTS 10
-  #define NUM_MESHES 3
-  #define PARTSIZE 64
+#define NUM_SCREEN_OBJECTS 10
+#define NUM_MESHES 3
+#define PARTSIZE 64
   uint32_t radius = 200;
 
   uint32_t num_vertices = 0;
-  int mesh_data_size;
-  float *mesh_data;
+  int mesh_bundle_size;
+  float *mesh_bundle;
 
-  
   u_int32_t num_mesh_instances[NUM_MESHES];
   memset(num_mesh_instances, 0, sizeof(u_int32_t) * NUM_MESHES);
   char *ply_file_paths[NUM_MESHES] = {
@@ -116,11 +116,13 @@ int main(int argc, char *argv[]) {
   int highest_instance_count = 0;
 
   for (i = 0; i < NUM_MESHES; i++) {
-    highest_instance_count = num_mesh_instances[i] > highest_instance_count ? num_mesh_instances[i] : highest_instance_count;
+    highest_instance_count = num_mesh_instances[i] > highest_instance_count
+                                 ? num_mesh_instances[i]
+                                 : highest_instance_count;
     parts_offset[i] = total_mesh_parts;
     // Open ply file, and read into vertexData
-    get_vertex_data(ply_file_paths[i], &raw_mesh_data[i], &raw_mesh_data_size[i],
-                    &raw_num_vertices_mesh[i]);
+    get_vertex_data(ply_file_paths[i], &raw_mesh_data[i],
+                    &raw_mesh_data_size[i], &raw_num_vertices_mesh[i]);
     int raw_num_face_mesh = raw_num_vertices_mesh[i] / 3;
     num_mesh_parts[i] = raw_num_face_mesh / PARTSIZE;
     remaining_faces[i] = raw_num_face_mesh % PARTSIZE;
@@ -130,37 +132,40 @@ int main(int argc, char *argv[]) {
     }
     total_mesh_parts += num_mesh_parts[i];
     long num_vertices_mesh_with_padding = num_mesh_parts[i] * PARTSIZE * 3;
-    
-    mesh_data_size_with_padding[i] = num_vertices_mesh_with_padding * 4 * sizeof(float);
+
+    mesh_data_size_with_padding[i] =
+        num_vertices_mesh_with_padding * 4 * sizeof(float);
   }
 
   // Set mesh partition data and add mesh to mesh "spritesheet"
-  int part_data_size = total_mesh_parts * sizeof(PartData);
-  PartData *part_data = (PartData *)malloc(part_data_size);
-  mesh_data_size = total_mesh_parts * PARTSIZE * 3 * 4 * sizeof(float);
-  mesh_data = (float *)malloc(mesh_data_size);
-  memset(mesh_data, 0, mesh_data_size);
-  
+  int part_map_size = total_mesh_parts * sizeof(PartMap);
+  PartMap *part_map = (PartMap *)malloc(part_map_size);
+  mesh_bundle_size = total_mesh_parts * PARTSIZE * 3 * 4 * sizeof(float);
+  mesh_bundle = (float *)malloc(mesh_bundle_size);
+  memset(mesh_bundle, 0, mesh_bundle_size);
+
   int mesh_data_offset = 0;
   int first_instance = 0;
   for (i = 0; i < NUM_MESHES; i++) {
     int first_part = parts_offset[i];
     for (j = 0; j < num_mesh_parts[i]; j++) {
-        part_data[first_part + j].numVerticesMesh = raw_num_vertices_mesh[i];
-        part_data[first_part + j].numFacesInPart = PARTSIZE;
-        part_data[first_part + j].meshOffset = num_vertices;
-        part_data[first_part + j].numMeshInstances = num_mesh_instances[i];
-        part_data[first_part + j].firstInstance = first_instance;
-        part_data[first_part + j].firstPart = first_part;
+      part_map[first_part + j].numVerticesMesh = raw_num_vertices_mesh[i];
+      part_map[first_part + j].numFacesInPart = PARTSIZE;
+      part_map[first_part + j].meshOffset = num_vertices;
+      part_map[first_part + j].numMeshInstances = num_mesh_instances[i];
+      part_map[first_part + j].firstInstance = first_instance;
+      part_map[first_part + j].firstPart = first_part;
     }
     mesh_next_instance[i] = first_instance;
     // change faces in last part to the remaining faces
     int last_part = first_part + num_mesh_parts[i] - 1;
-    part_data[last_part].numFacesInPart = remaining_faces[i];
+    part_map[last_part].numFacesInPart = remaining_faces[i];
 
-    int num_vertices_all_instances = raw_num_vertices_mesh[i] * num_mesh_instances[i];
+    int num_vertices_all_instances =
+        raw_num_vertices_mesh[i] * num_mesh_instances[i];
     num_vertices += num_vertices_all_instances;
-    memcpy(&mesh_data[mesh_data_offset], raw_mesh_data[i], raw_mesh_data_size[i]);
+    memcpy(&mesh_bundle[mesh_data_offset], raw_mesh_data[i],
+           raw_mesh_data_size[i]);
     free(raw_mesh_data[i]);
     mesh_data_offset += mesh_data_size_with_padding[i] / sizeof(float);
     first_instance += num_mesh_instances[i];
@@ -185,12 +190,12 @@ int main(int argc, char *argv[]) {
 
   // create a buffer on the GPU to hold our computation
   // input and output
-  WGPUBuffer mesh_buffer = wgpuDeviceCreateBuffer(
+  WGPUBuffer mesh_bundle_buffer = wgpuDeviceCreateBuffer(
       device, &(WGPUBufferDescriptor){
                   .nextInChain = NULL,
                   .label = "read buffer",
                   .usage = WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst,
-                  .size = mesh_data_size,
+                  .size = mesh_bundle_size,
                   .mappedAtCreation = false,
               });
   WGPUBuffer vertex_buffer = wgpuDeviceCreateBuffer(
@@ -207,7 +212,7 @@ int main(int argc, char *argv[]) {
                   .nextInChain = NULL,
                   .label = "part buffer",
                   .usage = WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst,
-                  .size = part_data_size,
+                  .size = part_map_size,
                   .mappedAtCreation = false,
               });
   WGPUBuffer instance_buffer = wgpuDeviceCreateBuffer(
@@ -219,9 +224,10 @@ int main(int argc, char *argv[]) {
                   .mappedAtCreation = false,
               });
   // Copy our input data to those buffers
-  wgpuQueueWriteBuffer(queue, mesh_buffer, 0, mesh_data, mesh_data_size);
-  wgpuQueueWriteBuffer(queue, part_buffer, 0, part_data, part_data_size);
-  wgpuQueueWriteBuffer(queue, instance_buffer, 0, &instance_data[0], instance_data_size);
+  wgpuQueueWriteBuffer(queue, mesh_bundle_buffer, 0, mesh_bundle, mesh_bundle_size);
+  wgpuQueueWriteBuffer(queue, part_buffer, 0, part_map, part_map_size);
+  wgpuQueueWriteBuffer(queue, instance_buffer, 0, &instance_data[0],
+                       instance_data_size);
 
   WGPUBindGroup compute_bind_group = wgpuDeviceCreateBindGroup(
       device,
@@ -235,15 +241,15 @@ int main(int argc, char *argv[]) {
                                              .size = vertex_data_size},
                                             {.nextInChain = NULL,
                                              .binding = 1,
-                                             .buffer = mesh_buffer,
+                                             .buffer = mesh_bundle_buffer,
                                              .offset = 0,
-                                             .size = mesh_data_size},
+                                             .size = mesh_bundle_size},
                                             {.nextInChain = NULL,
                                              .binding = 2,
                                              .buffer = part_buffer,
                                              .offset = 0,
-                                             .size = part_data_size},
-                                             {.nextInChain = NULL,
+                                             .size = part_map_size},
+                                            {.nextInChain = NULL,
                                              .binding = 3,
                                              .buffer = instance_buffer,
                                              .offset = 0,
@@ -398,7 +404,8 @@ int main(int argc, char *argv[]) {
 
   glfwGetWindowSize(window, (int *)&config.width, (int *)&config.height);
 
-  WGPUSwapChain swap_chain = wgpuDeviceCreateSwapChain(device, surface, &config);
+  WGPUSwapChain swap_chain =
+      wgpuDeviceCreateSwapChain(device, surface, &config);
 
   WGPUSupportedLimits limits = {};
   bool gotlimits = wgpuDeviceGetLimits(device, &limits);
