@@ -18,12 +18,12 @@ typedef struct Uniforms {
 } Uniforms;
 
 typedef struct PartMap {
-  u_int32_t numVerticesMesh;
+  u_int32_t numMeshVertices;
   u_int32_t numFacesInPart;
-  u_int32_t meshOffset;
+  u_int32_t outMeshVertexOffset;
   u_int32_t numMeshInstances;
-  u_int32_t firstInstance;
-  u_int32_t firstPart;
+  u_int32_t meshInstanceOffset;
+  u_int32_t meshPartsOffset;
 } PartMap;
 
 typedef struct InstanceData {
@@ -106,12 +106,12 @@ int main(int argc, char *argv[]) {
   // Calculate mesh partiton data
   u_int32_t total_mesh_parts = 0;
   int num_mesh_parts[NUM_MESHES];
-  long raw_num_vertices_mesh[NUM_MESHES];
+  long raw_num_mesh_vertices[NUM_MESHES];
   u_int32_t remaining_faces[NUM_MESHES];
   float *raw_mesh_data[NUM_MESHES];
   int raw_mesh_data_size[NUM_MESHES];
   int mesh_data_size_with_padding[NUM_MESHES];
-  int parts_offset[NUM_MESHES];
+  int mesh_parts_offset[NUM_MESHES];
   int mesh_next_instance[NUM_MESHES];
   int highest_instance_count = 0;
 
@@ -119,22 +119,22 @@ int main(int argc, char *argv[]) {
     highest_instance_count = num_mesh_instances[i] > highest_instance_count
                                  ? num_mesh_instances[i]
                                  : highest_instance_count;
-    parts_offset[i] = total_mesh_parts;
+    mesh_parts_offset[i] = total_mesh_parts;
     // Open ply file, and read into vertexData
     get_vertex_data(ply_file_paths[i], &raw_mesh_data[i],
-                    &raw_mesh_data_size[i], &raw_num_vertices_mesh[i]);
-    int raw_num_face_mesh = raw_num_vertices_mesh[i] / 3;
-    num_mesh_parts[i] = raw_num_face_mesh / PARTSIZE;
-    remaining_faces[i] = raw_num_face_mesh % PARTSIZE;
+                    &raw_mesh_data_size[i], &raw_num_mesh_vertices[i]);
+    int raw_num_mesh_faces = raw_num_mesh_vertices[i] / 3;
+    num_mesh_parts[i] = raw_num_mesh_faces / PARTSIZE;
+    remaining_faces[i] = raw_num_mesh_faces % PARTSIZE;
     int num_face_mesh = num_mesh_parts[i] * PARTSIZE;
-    if (raw_num_face_mesh > num_face_mesh) {
+    if (raw_num_mesh_faces > num_face_mesh) {
       num_mesh_parts[i]++;
     }
     total_mesh_parts += num_mesh_parts[i];
-    long num_vertices_mesh_with_padding = num_mesh_parts[i] * PARTSIZE * 3;
+    long num_mesh_vertices_with_padding = num_mesh_parts[i] * PARTSIZE * 3;
 
     mesh_data_size_with_padding[i] =
-        num_vertices_mesh_with_padding * 4 * sizeof(float);
+        num_mesh_vertices_with_padding * 4 * sizeof(float);
   }
 
   // Set mesh partition data and add mesh to mesh "spritesheet"
@@ -145,30 +145,29 @@ int main(int argc, char *argv[]) {
   memset(mesh_bundle, 0, mesh_bundle_size);
 
   int mesh_data_offset = 0;
-  int first_instance = 0;
+  int mesh_instance_offset = 0;
   for (i = 0; i < NUM_MESHES; i++) {
-    int first_part = parts_offset[i];
     for (j = 0; j < num_mesh_parts[i]; j++) {
-      part_map[first_part + j].numVerticesMesh = raw_num_vertices_mesh[i];
-      part_map[first_part + j].numFacesInPart = PARTSIZE;
-      part_map[first_part + j].meshOffset = num_vertices;
-      part_map[first_part + j].numMeshInstances = num_mesh_instances[i];
-      part_map[first_part + j].firstInstance = first_instance;
-      part_map[first_part + j].firstPart = first_part;
+      part_map[mesh_parts_offset[i] + j].numMeshVertices = raw_num_mesh_vertices[i];
+      part_map[mesh_parts_offset[i] + j].numFacesInPart = PARTSIZE;
+      part_map[mesh_parts_offset[i] + j].outMeshVertexOffset = num_vertices;
+      part_map[mesh_parts_offset[i] + j].numMeshInstances = num_mesh_instances[i];
+      part_map[mesh_parts_offset[i] + j].meshInstanceOffset = mesh_instance_offset;
+      part_map[mesh_parts_offset[i] + j].meshPartsOffset = mesh_parts_offset[i];
     }
-    mesh_next_instance[i] = first_instance;
+    mesh_next_instance[i] = mesh_instance_offset;
     // change faces in last part to the remaining faces
-    int last_part = first_part + num_mesh_parts[i] - 1;
+    int last_part = mesh_parts_offset[i] + num_mesh_parts[i] - 1;
     part_map[last_part].numFacesInPart = remaining_faces[i];
 
     int num_vertices_all_instances =
-        raw_num_vertices_mesh[i] * num_mesh_instances[i];
+        raw_num_mesh_vertices[i] * num_mesh_instances[i];
     num_vertices += num_vertices_all_instances;
     memcpy(&mesh_bundle[mesh_data_offset], raw_mesh_data[i],
            raw_mesh_data_size[i]);
     free(raw_mesh_data[i]);
     mesh_data_offset += mesh_data_size_with_padding[i] / sizeof(float);
-    first_instance += num_mesh_instances[i];
+    mesh_instance_offset += num_mesh_instances[i];
   }
 
   // populate instance_data for Meshes
