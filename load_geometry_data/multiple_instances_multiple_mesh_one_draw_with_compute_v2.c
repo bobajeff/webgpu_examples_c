@@ -108,10 +108,10 @@ int main(int argc, char *argv[]) {
   u_int32_t parts_count = 0;
   int num_mesh_parts[NUM_MESHES];
   long raw_num_mesh_vertices[NUM_MESHES];
-  u_int32_t remaining_faces[NUM_MESHES];
+  u_int32_t num_faces_in_last_part[NUM_MESHES];
   float *raw_mesh_data[NUM_MESHES];
   int raw_mesh_data_size[NUM_MESHES];
-  int mesh_data_size_with_padding[NUM_MESHES];
+  int mesh_data_size_plus_padding[NUM_MESHES];
   int mesh_next_instance[NUM_MESHES];
   MeshMap mesh_maps[NUM_MESHES];
   int mesh_maps_size = sizeof(mesh_maps);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
   int mesh_instance_offset = 0;
 
   for (i = 0; i < NUM_MESHES; i++) {
-    mesh_next_instance[i] = mesh_instance_offset;
+    // for setting workgroup count to highest number of instances
     highest_instance_count = num_mesh_instances[i] > highest_instance_count
                                  ? num_mesh_instances[i]
                                  : highest_instance_count;
@@ -134,26 +134,32 @@ int main(int argc, char *argv[]) {
     mesh_maps[i].meshInstanceOffset = mesh_instance_offset;
     mesh_maps[i].meshPartsOffset = parts_count;
 
+    // calculate number of mesh partitions and number of faces in last partition
     int raw_num_mesh_faces = raw_num_mesh_vertices[i] / 3;
     num_mesh_parts[i] = raw_num_mesh_faces / PARTSIZE;
-    remaining_faces[i] = raw_num_mesh_faces % PARTSIZE;
+    num_faces_in_last_part[i] = raw_num_mesh_faces % PARTSIZE;
     int num_face_mesh = num_mesh_parts[i] * PARTSIZE;
     if (raw_num_mesh_faces > num_face_mesh) {
       num_mesh_parts[i]++;
     }
-    parts_count += num_mesh_parts[i];
-    long num_mesh_vertices_with_padding = num_mesh_parts[i] * PARTSIZE * 3;
 
-    mesh_data_size_with_padding[i] =
-        num_mesh_vertices_with_padding * 4 * sizeof(float);
+    // for setting mesh bundle offsets
+    long num_mesh_vertices_plus_padding = num_mesh_parts[i] * PARTSIZE * 3;
+    mesh_data_size_plus_padding[i] =
+        num_mesh_vertices_plus_padding * 4 * sizeof(float);
+
+    // for setting instance data
+    mesh_next_instance[i] = mesh_instance_offset;
     mesh_instance_offset += num_mesh_instances[i];
 
+    // increase total partition and vertex counts (for setting buffer size and mesh offsets)
+    parts_count += num_mesh_parts[i];
     int num_vertices_all_instances =
         raw_num_mesh_vertices[i] * num_mesh_instances[i];
     vertex_count += num_vertices_all_instances;
   }
 
-  // Set mesh partition data and add mesh to mesh "spritesheet"
+  // Set partition map data and mesh bundle ("spritsheet") data
   int part_maps_size = parts_count * sizeof(PartMap);
   PartMap *part_maps = (PartMap *)malloc(part_maps_size);
   int mesh_bundle_size = parts_count * PARTSIZE * 3 * 4 * sizeof(float);
@@ -163,19 +169,20 @@ int main(int argc, char *argv[]) {
   int mesh_data_offset = 0;
   
   for (i = 0; i < NUM_MESHES; i++) {
+    // set partition data for mesh
     for (j = 0; j < num_mesh_parts[i]; j++) {
       part_maps[mesh_maps[i].meshPartsOffset + j].meshMapIndex = i;
       part_maps[mesh_maps[i].meshPartsOffset + j].numFacesInPart = PARTSIZE;
     }
-    
-    // change faces in last part to the remaining faces
+        // set number of faces for last partition
     int last_part = mesh_maps[i].meshPartsOffset + num_mesh_parts[i] - 1;
-    part_maps[last_part].numFacesInPart = remaining_faces[i];
+    part_maps[last_part].numFacesInPart = num_faces_in_last_part[i];
 
+    // add mesh data to mesh bundle
     memcpy(&mesh_bundle[mesh_data_offset], raw_mesh_data[i],
            raw_mesh_data_size[i]);
     free(raw_mesh_data[i]);
-    mesh_data_offset += mesh_data_size_with_padding[i] / sizeof(float);
+    mesh_data_offset += mesh_data_size_plus_padding[i] / sizeof(float);
   }
 
   // populate instance_data for Meshes
