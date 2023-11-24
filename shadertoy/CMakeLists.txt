@@ -10,4 +10,4 @@ add_compile_definitions(RESOURCE_DIR="${CMAKE_SOURCE_DIR}/shadertoy/res/")
 add_executable(shader_art_coding_introduction
 shader_art_coding_introduction.c
 )
-target_link_libraries(shader_art_coding_introduction PRIVATE glfw wgpu_native create_surface framework)
+target_link_libraries(shader_art_coding_introduction PRIVATE glfw wgpu_native create_surface framework cglm)

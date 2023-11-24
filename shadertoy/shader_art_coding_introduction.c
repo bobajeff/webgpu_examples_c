@@ -6,6 +6,14 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cglm/cglm.h>
+#include <sys/time.h>
+
+typedef struct Uniforms {
+  vec2 iResolution;
+  float iTime;
+  float pad;
+} Uniforms;
 
 int main(int argc, char *argv[]) {
   initializeLog();
@@ -118,8 +126,8 @@ int main(int argc, char *argv[]) {
 
   WGPUBuffer uniform_buffer;
   WGPUBindGroup bind_group;
-  float iResolution[2];
-  const uint64_t uniform_buffer_size = sizeof(iResolution);
+  Uniforms uniforms = {};
+  const uint64_t uniform_buffer_size = sizeof(uniforms);
 
   // resolution
   uniform_buffer = wgpuDeviceCreateBuffer(
@@ -146,6 +154,11 @@ int main(int argc, char *argv[]) {
   glfwGetWindowSize(window, (int *)&config.width, (int *)&config.height);
 
   WGPUSwapChain swapChain = wgpuDeviceCreateSwapChain(device, surface, &config);
+
+  struct timeval start, stop;
+  gettimeofday(&start, NULL);
+  gettimeofday(&stop, NULL);
+
 
   while (!glfwWindowShouldClose(window)) {
 
@@ -202,11 +215,13 @@ int main(int argc, char *argv[]) {
     int window_width, window_height;
 
     glfwGetWindowSize(window, (int *)&window_width, (int *)&window_height);
-    iResolution[0] = window_width;
-    iResolution[1] = window_height;
+    uniforms.iResolution[0] = window_width;
+    uniforms.iResolution[1] = window_height;
+    uniforms.iTime =  (stop.tv_sec - start.tv_sec)*1000 + (stop.tv_usec - start.tv_usec)/1000.0;
+    uniforms.iTime *= 0.001;
 
-    wgpuQueueWriteBuffer(queue, uniform_buffer, 0, &iResolution,
-                         sizeof(iResolution));
+    wgpuQueueWriteBuffer(queue, uniform_buffer, 0, &uniforms,
+                         sizeof(uniforms));
     // make a render pass encoder to encode render specific commands
     WGPURenderPassEncoder pass =
         wgpuCommandEncoderBeginRenderPass(encoder, &renderPassDescriptor);
@@ -223,6 +238,7 @@ int main(int argc, char *argv[]) {
     wgpuSwapChainPresent(swapChain);
 
     glfwPollEvents();
+    gettimeofday(&stop, NULL);
   }
 
   glfwDestroyWindow(window);
