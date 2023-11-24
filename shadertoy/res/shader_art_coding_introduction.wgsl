@@ -21,6 +21,15 @@ struct Uniforms {
     return vec4<f32>(pos[vertexIndex], 0.0, 1.0);
 }
 
+fn palette(t: f32) -> vec3<f32> {
+    let a = vec3<f32>(0.5, 0.5, 0.5);
+    let b = vec3<f32>(0.5, 0.5, 0.5);
+    let c = vec3<f32>(1.0, 1.0, 1.0);
+    let d = vec3<f32>(0.263,0.416,0.557);
+
+    return a + b*cos( 6.28318*(c*t+d) );
+}
+
 @fragment fn fs(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
     var uv = vec2<f32>();
     uv.x = position.x / uni.iResolution.x;
@@ -29,10 +38,15 @@ struct Uniforms {
     uv.x *= uni.iResolution.x / uni.iResolution.y;
 
     var d = length(uv);
+
+    var col = palette(d + uni.iTime);
+
     d = sin(d * 8.0 + uni.iTime) / 8.0;
     d = abs(d);
 
     d = 0.02 / d;
 
-    return vec4<f32>(d, d, d, 1.0);
+    col *= d;
+
+    return vec4<f32>(col, 1.0);
 }
