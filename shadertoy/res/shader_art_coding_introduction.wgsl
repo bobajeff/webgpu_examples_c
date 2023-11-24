@@ -23,7 +23,9 @@
     uv = uv * 2.0 - 1.0;
     uv.x *= iResolution.x / iResolution.y;
 
-    let d = length(uv);
+    var d = length(uv);
+    d -= 0.5;
+    d = abs(d);
 
     return vec4<f32>(d, d, d, 1.0);
 }
