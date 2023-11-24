@@ -37,21 +37,24 @@ fn palette(t: f32) -> vec3<f32> {
     uv = uv * 2.0 - 1.0;
     uv.x *= uni.iResolution.x / uni.iResolution.y;
     let uv0 = uv;
-
     var finalColor = vec3<f32>(0.0);
 
-    uv = fract(uv * 2.0) - 0.5;
+    for (var i = 0; i < 3; i++) {
 
-    var d = length(uv);
+        uv = fract(uv * 1.5) - 0.5;
 
-    var col = palette(length(uv0) + uni.iTime);
+        var d = length(uv);
 
-    d = sin(d * 8.0 + uni.iTime) / 8.0;
-    d = abs(d);
+        var col = palette(length(uv0) + uni.iTime * 0.4);
 
-    d = 0.02 / d;
+        d = sin(d * 8.0 + uni.iTime) / 8.0;
+        d = abs(d);
 
-    finalColor += col * d;
+        d = 0.02 / d;
+
+        finalColor += col * d;
+    }
+
 
     return vec4<f32>(finalColor, 1.0);
 }
