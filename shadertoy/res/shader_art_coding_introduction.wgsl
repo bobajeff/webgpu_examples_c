@@ -32,7 +32,7 @@ struct Uniforms {
     d = sin(d * 8.0 + uni.iTime) / 8.0;
     d = abs(d);
 
-    d = smoothstep(0.0, 0.1, d);
+    d = 0.02 / d;
 
     return vec4<f32>(d, d, d, 1.0);
 }
