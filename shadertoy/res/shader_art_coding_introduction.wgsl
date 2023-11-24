@@ -39,18 +39,18 @@ fn palette(t: f32) -> vec3<f32> {
     let uv0 = uv;
     var finalColor = vec3<f32>(0.0);
 
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 4; i++) {
 
         uv = fract(uv * 1.5) - 0.5;
 
-        var d = length(uv);
+        var d = length(uv) * exp(-length(uv0));
 
-        var col = palette(length(uv0) + uni.iTime * 0.4);
+        var col = palette(length(uv0) + f32(i) * 0.4 + uni.iTime * 0.4);
 
         d = sin(d * 8.0 + uni.iTime) / 8.0;
         d = abs(d);
 
-        d = 0.02 / d;
+        d = 0.01 / d;
 
         finalColor += col * d;
     }
