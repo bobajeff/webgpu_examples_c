@@ -20,8 +20,9 @@
     var uv = vec2<f32>();
     uv.x = position.x / iResolution.x;
     uv.y = 1.0 - (position.y / iResolution.y); // invert y
-
     uv = uv * 2.0 - 1.0;
 
-    return vec4<f32>(uv, 0.0, 1.0);
+    let d = length(uv);
+
+    return vec4<f32>(d, 0.0, 0.0, 1.0);
 }
