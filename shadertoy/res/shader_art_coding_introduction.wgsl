@@ -50,7 +50,7 @@ fn palette(t: f32) -> vec3<f32> {
         d = sin(d * 8.0 + uni.iTime) / 8.0;
         d = abs(d);
 
-        d = 0.01 / d;
+        d = pow(0.01 / d, 2.0);
 
         finalColor += col * d;
     }
