@@ -27,7 +27,7 @@
     d -= 0.5;
     d = abs(d);
 
-    d = step(0.1, d);
+    d = smoothstep(0.0, 0.1, d);
 
     return vec4<f32>(d, d, d, 1.0);
 }
