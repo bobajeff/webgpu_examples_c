@@ -77,3 +77,4 @@ FetchContent_MakeAvailable(cglm)
 
 add_subdirectory(glm_cameras)
 add_subdirectory(load_geometry_data)
+add_subdirectory(shadertoy)
