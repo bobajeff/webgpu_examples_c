@@ -1,0 +1,27 @@
+#!/usr/bin/bash
+
+# load_geometry_data
+timeout 5 build/glm_cameras/webgpu-cameras-step-1-direct-math 
+timeout 5 build/glm_cameras/webgpu-cameras-step-2-camera-aim 
+timeout 5 build/glm_cameras/webgpu-cameras-step-3-look-at 
+timeout 5 build/glm_cameras/webgpu-cameras-step-4-aim-Fs 
+timeout 5 build/glm_cameras/webgpu-perspective-projection-step-4-perspective
+
+# load_geometry_data
+timeout 5 build/load_geometry_data/multiple_instances_multiple_mesh_one_draw 
+timeout 5 build/load_geometry_data/multiple_instances_multiple_mesh_one_draw_with_compute 
+timeout 5 build/load_geometry_data/multiple_instances_multiple_mesh_one_draw_with_compute_v2 
+timeout 5 build/load_geometry_data/multiple_instances_of_mesh 
+timeout 5 build/load_geometry_data/multiple_instances_one_draw_with_compute_workgroup_size_64 
+timeout 5 build/load_geometry_data/multiple_instances_one_draw_with_compute 
+timeout 5 build/load_geometry_data/multiple_instances_one_draw_with_compute_workgroup_size_64_no_excess_vertices 
+timeout 5 build/load_geometry_data/multiple_instances_using_instanceCount 
+timeout 5 build/load_geometry_data/multiple_instances_using_instanceCount_and_StepModeInstance 
+timeout 5 build/load_geometry_data/multiple_instances_using_instanceCount_firstVertex_firstInstance 
+timeout 5 build/load_geometry_data/multiple_instances_using_instanceCount_with_multiple_meshes 
+timeout 5 build/load_geometry_data/multiple_of_seperate_meshes 
+timeout 5 build/load_geometry_data/use_ply_data_DrawIndexed 
+timeout 5 build/load_geometry_data/use_ply_data
+
+# shadertoy
+timeout 5 build/shadertoy/shader_art_coding_introduction
